@@ -270,5 +270,3 @@ final class WeeklySchedule
         return $date->setTime($hours, $minutes);
     }
 }
-
-\n

@@ -327,5 +327,3 @@ final class ThermalModel
         return (self::EMA_ALPHA * $sample) + ((1.0 - self::EMA_ALPHA) * $previous);
     }
 }
-
-\n

@@ -124,5 +124,3 @@ final class ThermalModelTest extends TestCase
         $this->assertFalse(ThermalModel::shouldStopForResidualHeat($model, 23.8, 24.0));
     }
 }
-
-\n

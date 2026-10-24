@@ -85,5 +85,3 @@ final class WeeklyScheduleTest extends TestCase
         $this->assertSame('2026-03-29 19:00 +02:00', $nextComfort['date']->format('Y-m-d H:i P'));
     }
 }
-
-\n

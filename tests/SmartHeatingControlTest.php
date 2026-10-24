@@ -178,5 +178,3 @@ final class SmartHeatingControlTest extends TestCaseSymconValidation
         );
     }
 }
-
-\n

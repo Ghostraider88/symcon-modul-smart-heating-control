@@ -2578,5 +2578,3 @@ class SmartHeatingControl extends IPSModuleStrict
         return $result;
     }
 }
-
-\n
