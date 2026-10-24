@@ -1,0 +1,2 @@
+geändert:
+- Generische IP-Symcon-Modulvorlage, Build 1.

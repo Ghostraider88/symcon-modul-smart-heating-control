@@ -1,0 +1,14 @@
+{
+    "id": "{48B315D3-0E16-4A97-B09E-8F7DCECF4F7B}",
+    "name": "MyModule",
+    "type": 3,
+    "vendor": "",
+    "aliases": [
+        "My Module"
+    ],
+    "url": "https://github.com/DEIN-USER/DEIN-REPO",
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "MYM"
+}

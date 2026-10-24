@@ -1,0 +1,30 @@
+name: Run Tests
+
+on: [push, pull_request]
+
+permissions:
+    contents: read
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                php-version: ['8.1', '8.3']
+        steps:
+            - name: Checkout module
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+              with:
+                  submodules: recursive
+                  persist-credentials: false
+            - name: Set up PHP
+              uses: shivammathur/setup-php@d52fc211a0436f8839a587b3b5b8efddab4744ea
+              with:
+                  php-version: ${{ matrix.php-version }}
+                  tools: composer:v2
+                  coverage: none
+            - name: Install development dependencies
+              run: composer install --no-interaction --prefer-dist
+            - name: Run tests
+              run: composer test
