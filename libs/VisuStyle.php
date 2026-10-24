@@ -134,6 +134,10 @@ final class Style
     if (!message || typeof message !== 'object') return;
     const root = document.querySelector('[data-mvs-root]');
     if (!root) return;
+    if (message.hideHeader === true) {
+      const header = root.querySelector('.mvs-header');
+      if (header) header.remove();
+    }
     if (typeof message.content === 'string') {
       const content = root.querySelector('[data-mvs-content]');
       if (content && content.innerHTML !== message.content) {

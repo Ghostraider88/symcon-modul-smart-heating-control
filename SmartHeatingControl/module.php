@@ -2108,6 +2108,7 @@ class SmartHeatingControl extends IPSModuleStrict
         return [
             'state'      => $state,
             'stateLabel' => $stateLabel,
+            'hideHeader' => true,
             'content'    => $this->RenderVisualizationContent($stateLabel),
             'footer'     => (string) $this->GetValue('ControllerStatus'),
         ];
