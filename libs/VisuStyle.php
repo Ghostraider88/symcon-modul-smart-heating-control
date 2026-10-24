@@ -31,6 +31,11 @@ final class Style
         $stateLabel = self::escape((string) ($configuration['stateLabel'] ?? 'Bereit'));
         $content = (string) ($configuration['content'] ?? '');
         $footer = self::escape((string) ($configuration['footer'] ?? ''));
+        $headerMarkup = (bool) ($configuration['showHeader'] ?? true)
+            ? '<header class="mvs-header"><span class="mvs-icon"><i class="' . $icon . '"></i></span>'
+                . '<span class="mvs-title">' . $title . '</span>'
+                . '<span class="mvs-status" data-mvs-status>' . $stateLabel . '</span></header>'
+            : '';
         $footerMarkup = '<div class="mvs-footer" data-mvs-footer>' . $footer . '</div>';
 
         return <<<HTML
@@ -81,6 +86,8 @@ final class Style
   .mvs-content { display: flex; flex-direction: column; gap: var(--mvs-space-2); }
   .mvs-section { padding: var(--mvs-space-3); border: 1px solid var(--mvs-border); border-radius: var(--mvs-radius); background: var(--mvs-panel); }
   .mvs-section-title { margin-bottom: var(--mvs-space-2); font-size: .98rem; font-weight: 650; }
+  .mvs-section-heading { display: flex; align-items: center; justify-content: space-between; gap: var(--mvs-space-2); margin-bottom: var(--mvs-space-2); }
+  .mvs-section-heading .mvs-section-title { margin-bottom: 0; }
   .mvs-actions { display: flex; flex-wrap: wrap; gap: var(--mvs-space-2); }
   .mvs-button { min-height: 36px; padding: 7px 12px; border: 0; border-radius: 8px; background: var(--accent-color); color: var(--content-on-accent-color, #fff); cursor: pointer; }
   .mvs-button.secondary { border: 1px solid var(--mvs-border); background: transparent; color: var(--content-color); }
@@ -105,15 +112,12 @@ final class Style
     body { padding: 12px 6px 6px; font-size: 13px; }
     .mvs-header { align-items: flex-start; }
     .mvs-status { margin-left: auto; }
+    .mvs-section-heading { align-items: flex-start; }
     .mvs-button { flex: 1 1 auto; }
   }
 </style>
 <main class="mvs-tile mvs-status-{$state}" data-mvs-root data-mvs-state="{$state}">
-  <header class="mvs-header">
-    <span class="mvs-icon"><i class="{$icon}"></i></span>
-    <span class="mvs-title">{$title}</span>
-    <span class="mvs-status" data-mvs-status>{$stateLabel}</span>
-  </header>
+  {$headerMarkup}
   <div class="mvs-content" data-mvs-content>{$content}</div>
   {$footerMarkup}
 </main>
@@ -196,6 +200,17 @@ HTML;
     {
         return '<section class="mvs-section">'
             . '<div class="mvs-section-title">' . self::escape($title) . '</div>'
+            . $content
+            . '</section>';
+    }
+
+    public static function sectionWithStatus(string $title, string $content, string $statusLabel): string
+    {
+        return '<section class="mvs-section">'
+            . '<div class="mvs-section-heading">'
+            . '<div class="mvs-section-title">' . self::escape($title) . '</div>'
+            . '<span class="mvs-status" data-mvs-status>' . self::escape($statusLabel) . '</span>'
+            . '</div>'
             . $content
             . '</section>';
     }

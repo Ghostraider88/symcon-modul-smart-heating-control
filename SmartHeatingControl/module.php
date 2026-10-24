@@ -2098,17 +2098,18 @@ class SmartHeatingControl extends IPSModuleStrict
         $state = $lastError !== '' && !$sensorDiscrepancyOnly
             ? 'error'
             : ((bool) $this->GetValue('FaultActive') ? 'warning' : ($isOn ? 'active' : 'inactive'));
+        $stateLabel = $this->Translate(match ($state) {
+            'active'  => 'Heating',
+            'error'   => 'Needs attention',
+            'warning' => 'Check status',
+            default   => 'Idle',
+        });
 
         return [
             'state'      => $state,
-            'stateLabel' => $this->Translate(match ($state) {
-                'active' => 'Heating',
-                'error'  => 'Needs attention',
-                'warning' => 'Check status',
-                default  => 'Idle',
-            }),
-            'content' => $this->RenderVisualizationContent(),
-            'footer'  => (string) $this->GetValue('ControllerStatus'),
+            'stateLabel' => $stateLabel,
+            'content'    => $this->RenderVisualizationContent($stateLabel),
+            'footer'     => (string) $this->GetValue('ControllerStatus'),
         ];
     }
 
@@ -2126,12 +2127,13 @@ class SmartHeatingControl extends IPSModuleStrict
             'icon'       => 'fa-light fa-temperature-half',
             'state'      => $payload['state'],
             'stateLabel' => $payload['stateLabel'],
+            'showHeader' => false,
             'content'    => $payload['content'],
             'footer'     => $payload['footer'],
         ]);
     }
 
-    private function RenderVisualizationContent(): string
+    private function RenderVisualizationContent(string $stateLabel): string
     {
         $mode = (int) $this->GetValue('OperatingMode');
         $isOn = (bool) $this->GetValue('HeatingActive');
@@ -2146,7 +2148,7 @@ class SmartHeatingControl extends IPSModuleStrict
             : '';
 
         return $notice
-            . $this->RenderOverview($mode, $isOn)
+            . $this->RenderOverview($mode, $isOn, $stateLabel)
             . $this->RenderControls($mode)
             . $this->RenderScheduleEditor()
             . Style::disclosure(
@@ -2160,7 +2162,7 @@ class SmartHeatingControl extends IPSModuleStrict
             );
     }
 
-    private function RenderOverview(int $mode, bool $isOn): string
+    private function RenderOverview(int $mode, bool $isOn, string $stateLabel): string
     {
         $roomTemperature = (float) $this->GetValue('RoomTemperature');
         $scheduledTargetTemperature = (float) $this->GetValue('ScheduledTargetTemperature');
@@ -2204,7 +2206,7 @@ class SmartHeatingControl extends IPSModuleStrict
             )
             . '</div>';
 
-        return Style::section($this->Translate('Heating overview'), $content);
+        return Style::sectionWithStatus($this->Translate('Heating overview'), $content, $stateLabel);
     }
 
     private function RenderControls(int $mode): string
