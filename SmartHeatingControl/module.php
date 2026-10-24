@@ -558,6 +558,66 @@ class SmartHeatingControl extends IPSModuleStrict
         $this->RunControlCycle();
     }
 
+    public function RebaseEnergyToMeter(): void
+    {
+        $energyID = $this->ReadPropertyInteger('EnergyVariableID');
+        $reading = $this->ReadNumericReading($energyID);
+        $now = $this->getTime();
+        if (
+            $reading === null
+            || $reading['updated'] <= 0
+            || $reading['updated'] > $now
+            || ($now - $reading['updated']) > $this->ReadPropertyInteger('PowerTimeoutSeconds')
+        ) {
+            throw new InvalidArgumentException('The configured energy meter has no recent numeric reading.');
+        }
+
+        $meterValue = max(0.0, (float) $reading['value']);
+        $state = EnergyTracker::normalize(json_decode($this->ReadAttributeString('EnergyTracker'), true));
+        if (
+            $state['source'] !== 'meter'
+            || $state['meterResetAt'] <= 0
+            || $state['lastMeterKWh'] === null
+            || abs($state['lastMeterKWh'] - $meterValue) > 0.05
+        ) {
+            throw new InvalidArgumentException('Rebase requires a recently observed meter reset and stable meter reading.');
+        }
+
+        $previousTotal = (float) $state['totalKWh'];
+        $correction = $previousTotal - $meterValue;
+        if ($correction < 1.0) {
+            throw new InvalidArgumentException('The current meter value does not show a significant overcount.');
+        }
+
+        $state['totalKWh'] = $meterValue;
+        $state['meterEnergyKWh'] = max(0.0, (float) $state['meterEnergyKWh'] - $correction);
+        $state['regularEnergyKWh'] = max(0.0, (float) $state['regularEnergyKWh'] - $correction);
+        $state['lastMeterKWh'] = $meterValue;
+        $state['lastTimestamp'] = $now;
+        $state['lastGapSeconds'] = 0;
+        $state['source'] = 'meter';
+
+        $localNow = (new DateTimeImmutable('@' . $now))->setTimezone(new DateTimeZone(date_default_timezone_get()));
+        foreach ([
+            'dayBuckets'   => $localNow->format('Y-m-d'),
+            'weekBuckets'  => $localNow->format('o-W'),
+            'monthBuckets' => $localNow->format('Y-m'),
+        ] as $bucketName => $bucketKey) {
+            if (isset($state[$bucketName][$bucketKey])) {
+                $state[$bucketName][$bucketKey] = max(0.0, (float) $state[$bucketName][$bucketKey] - $correction);
+            }
+        }
+
+        $this->WriteAttributeString('EnergyTracker', json_encode($state, JSON_THROW_ON_ERROR));
+        $this->WriteEnergyTrackerValues($state, $now);
+        $this->SendVisualizationPayload();
+        $this->SendDebug(
+            'Energy tracker rebased',
+            number_format($previousTotal, 6, '.', '') . ' -> ' . number_format($meterValue, 6, '.', '') . ' kWh',
+            0
+        );
+    }
+
     public function ResetLearning(): void
     {
         $this->WriteAttributeString('ThermalModel', json_encode(ThermalModel::create(), JSON_THROW_ON_ERROR));
