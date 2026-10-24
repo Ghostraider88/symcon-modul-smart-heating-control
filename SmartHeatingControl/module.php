@@ -585,35 +585,58 @@ class SmartHeatingControl extends IPSModuleStrict
 
         $previousTotal = (float) $state['totalKWh'];
         $correction = $previousTotal - $meterValue;
-        if ($correction < 1.0) {
-            throw new InvalidArgumentException('The current meter value does not show a significant overcount.');
+        if ($correction >= 1.0) {
+            $state['totalKWh'] = $meterValue;
+            $state['meterEnergyKWh'] = max(0.0, (float) $state['meterEnergyKWh'] - $correction);
+            $state['regularEnergyKWh'] = max(0.0, (float) $state['regularEnergyKWh'] - $correction);
         }
 
-        $state['totalKWh'] = $meterValue;
-        $state['meterEnergyKWh'] = max(0.0, (float) $state['meterEnergyKWh'] - $correction);
-        $state['regularEnergyKWh'] = max(0.0, (float) $state['regularEnergyKWh'] - $correction);
         $state['lastMeterKWh'] = $meterValue;
         $state['lastTimestamp'] = $now;
         $state['lastGapSeconds'] = 0;
         $state['source'] = 'meter';
 
         $localNow = (new DateTimeImmutable('@' . $now))->setTimezone(new DateTimeZone(date_default_timezone_get()));
+        $localReset = (new DateTimeImmutable('@' . $state['meterResetAt']))->setTimezone($localNow->getTimezone());
         foreach ([
-            'dayBuckets'   => $localNow->format('Y-m-d'),
-            'weekBuckets'  => $localNow->format('o-W'),
-            'monthBuckets' => $localNow->format('Y-m'),
-        ] as $bucketName => $bucketKey) {
-            if (isset($state[$bucketName][$bucketKey])) {
-                $state[$bucketName][$bucketKey] = max(0.0, (float) $state[$bucketName][$bucketKey] - $correction);
+            'dayBuckets'   => ['current' => $localNow->format('Y-m-d'), 'reset' => $localReset->format('Y-m-d')],
+            'weekBuckets'  => ['current' => $localNow->format('o-W'), 'reset' => $localReset->format('o-W')],
+            'monthBuckets' => ['current' => $localNow->format('Y-m'), 'reset' => $localReset->format('Y-m')],
+        ] as $bucketName => $period) {
+            $bucketKey = $period['current'];
+            if (!isset($state[$bucketName][$bucketKey])) {
+                $state[$bucketName][$bucketKey] = ['total' => 0.0, 'pv' => 0.0, 'regular' => 0.0];
             }
+
+            $bucket = $state[$bucketName][$bucketKey];
+            if ($correction >= 1.0) {
+                $bucket['total'] = max(0.0, (float) $bucket['total'] - $correction);
+                $remainingCorrection = $correction;
+                foreach (['regular', 'pv'] as $component) {
+                    $deduction = min($remainingCorrection, (float) $bucket[$component]);
+                    $bucket[$component] = max(0.0, (float) $bucket[$component] - $deduction);
+                    $remainingCorrection -= $deduction;
+                }
+            }
+
+            // A meter reset inside the active period provides a baseline for restoring
+            // buckets after a rebase. The tracker cannot otherwise recover the lost bucket data.
+            if ($period['current'] === $period['reset'] && $bucket['total'] < $meterValue) {
+                $missingEnergy = $meterValue - (float) $bucket['total'];
+                $bucket['total'] = $meterValue;
+                $component = $state['lastPVActive'] ? 'pv' : 'regular';
+                $bucket[$component] += $missingEnergy;
+            }
+
+            $state[$bucketName][$bucketKey] = $bucket;
         }
 
         $this->WriteAttributeString('EnergyTracker', json_encode($state, JSON_THROW_ON_ERROR));
         $this->WriteEnergyTrackerValues($state, $now);
         $this->SendVisualizationPayload();
         $this->SendDebug(
-            'Energy tracker rebased',
-            number_format($previousTotal, 6, '.', '') . ' -> ' . number_format($meterValue, 6, '.', '') . ' kWh',
+            $correction >= 1.0 ? 'Energy tracker rebased' : 'Energy period buckets reconciled',
+            number_format($previousTotal, 6, '.', '') . ' -> ' . number_format((float) $state['totalKWh'], 6, '.', '') . ' kWh',
             0
         );
     }
