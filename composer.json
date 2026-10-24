@@ -1,6 +1,6 @@
 {
-    "name": "symcon/module-template",
-    "description": "A starter library for IP-Symcon PHP modules.",
+    "name": "ghostraider88/symcon-modul-smart-heating-control",
+    "description": "Generic adaptive room heating controller for IP-Symcon.",
     "type": "symcon-module",
     "license": "MIT",
     "require": {

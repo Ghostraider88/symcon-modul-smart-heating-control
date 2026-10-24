@@ -1,2 +1,12 @@
+neu:
+- Vollständige Heizungsregelung mit Automatik, manuellem Modus, Aus, Boost und bearbeitbarem Wochenplan.
+- Adaptives Vorheizen mit persistentem thermischem Lernmodell und Restwärmeoptimierung.
+- PV-Potenzial, Freigabe-Schnittstelle, Komfortzeit-Horizont und begrenzter Temperaturaufschlag.
+- Energieauswertung aus kWh-Zähler oder frischer Leistungsmessung einschließlich Periodenwerten, PV-Phase und Messlückendiagnose.
+- Archive-Control-Verläufe, 24-Stunden-Trenddiagramm, Wochenplanvisualisierung und Sicherheitsdiagnose.
+- Vollständige Dokumentation und automatisierte Tests für Regelung, Zeitplan, PV, Sensorik, Sicherheit und Energie.
+
 geändert:
-- Generische IP-Symcon-Modulvorlage, Build 1.
+- Herstellerunabhängige Auswahl vorhandener IP-Symcon-Variablen; keine festen Objekt-IDs oder Heizkörper-Modellangaben.
+- Primär- und Sekundärtemperatur mit getrennter Kontroll- und Diagnosefunktion.
+- Sichere Abschaltung bei Sensorausfall und Temperaturgrenze; Schalt-Rückmeldung und optionale Laufzeitsperre.

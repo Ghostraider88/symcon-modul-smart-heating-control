@@ -1,0 +1,295 @@
+{
+    "elements": [
+        {
+            "type": "SelectVariable",
+            "name": "RoomTemperatureID",
+            "caption": "Primary room temperature",
+            "validVariableTypes": [
+                1,
+                2
+            ]
+        },
+        {
+            "type": "SelectVariable",
+            "name": "SecondaryTemperatureID",
+            "caption": "Secondary room temperature (optional)",
+            "validVariableTypes": [
+                1,
+                2
+            ]
+        },
+        {
+            "type": "SelectVariable",
+            "name": "HeaterSwitchID",
+            "caption": "Heater socket ON/OFF variable",
+            "validVariableTypes": [
+                0
+            ],
+            "requiredAction": 1
+        },
+        {
+            "type": "SelectVariable",
+            "name": "PowerVariableID",
+            "caption": "Power variable (W)",
+            "validVariableTypes": [
+                1,
+                2
+            ]
+        },
+        {
+            "type": "SelectVariable",
+            "name": "EnergyVariableID",
+            "caption": "Cumulative energy variable (kWh, optional)",
+            "validVariableTypes": [
+                1,
+                2
+            ]
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "NominalHeatingPower",
+            "caption": "Nominal heater power (W)",
+            "minimum": 1,
+            "maximum": 10000
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "TemperatureOffset",
+            "caption": "Primary sensor offset (°C)",
+            "minimum": -10,
+            "maximum": 10,
+            "digits": 1
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "SecondaryTemperatureOffset",
+            "caption": "Secondary sensor offset (°C)",
+            "minimum": -10,
+            "maximum": 10,
+            "digits": 1
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "TargetTemperature",
+            "caption": "Target temperature (°C)",
+            "minimum": 5,
+            "maximum": 35,
+            "digits": 1
+        },
+        {
+            "type": "CheckBox",
+            "name": "WeeklyScheduleEnabled",
+            "caption": "Use weekly schedule"
+        },
+        {
+            "type": "CheckBox",
+            "name": "AdaptivePreheatingEnabled",
+            "caption": "Enable adaptive preheating"
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "MaximumPreheatMinutes",
+            "caption": "Maximum preheating time (minutes)",
+            "minimum": 0,
+            "maximum": 360
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "PreheatSafetyBufferMinutes",
+            "caption": "Preheating safety buffer (minutes)",
+            "minimum": 0,
+            "maximum": 120
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "MinimumHeatingSamples",
+            "caption": "Minimum heating samples",
+            "minimum": 1,
+            "maximum": 100
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "InitialHeatingRateKPerHour",
+            "caption": "Initial heating rate (K/h)",
+            "minimum": 0.05,
+            "maximum": 3,
+            "digits": 2
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "BoostTemperature",
+            "caption": "Boost temperature (°C)",
+            "minimum": 5,
+            "maximum": 35,
+            "digits": 1
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "BoostDurationMinutes",
+            "caption": "Boost duration (minutes)",
+            "minimum": 1,
+            "maximum": 240
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "MaximumPVTemperatureOffset",
+            "caption": "Maximum PV temperature offset (K)",
+            "minimum": 0,
+            "maximum": 5,
+            "digits": 1
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "PVPlanningHorizonHours",
+            "caption": "PV planning horizon (hours)",
+            "minimum": 1,
+            "maximum": 168
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "PVPermissionTimeoutSeconds",
+            "caption": "PV permission timeout (seconds, 0 disables)",
+            "minimum": 0,
+            "maximum": 86400
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "Hysteresis",
+            "caption": "Hysteresis per side (K)",
+            "minimum": 0.1,
+            "maximum": 3,
+            "digits": 1
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "MaximumRoomTemperature",
+            "caption": "Maximum room temperature (°C)",
+            "minimum": 10,
+            "maximum": 40,
+            "digits": 1
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "SensorTimeoutSeconds",
+            "caption": "Sensor timeout (seconds)",
+            "minimum": 30,
+            "maximum": 86400
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "PowerTimeoutSeconds",
+            "caption": "Power reading timeout (seconds)",
+            "minimum": 30,
+            "maximum": 86400
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "MaximumSensorDifference",
+            "caption": "Maximum sensor difference (K)",
+            "minimum": 0.5,
+            "maximum": 20,
+            "digits": 1
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "MinimumOnSeconds",
+            "caption": "Minimum ON time (seconds)",
+            "minimum": 0,
+            "maximum": 3600
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "MinimumOffSeconds",
+            "caption": "Minimum OFF time (seconds)",
+            "minimum": 0,
+            "maximum": 3600
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "ControlIntervalSeconds",
+            "caption": "Control interval (seconds)",
+            "minimum": 5,
+            "maximum": 300
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "PowerThreshold",
+            "caption": "Heating power threshold (W)",
+            "minimum": 0,
+            "maximum": 1000
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "MaximumContinuousOnMinutes",
+            "caption": "Maximum continuous ON time (minutes, 0 disables)",
+            "minimum": 0,
+            "maximum": 1440
+        },
+        {
+            "type": "CheckBox",
+            "name": "StopAfterMaximumContinuousOnTime",
+            "caption": "Switch off and lock when maximum ON time is exceeded"
+        },
+        {
+            "type": "CheckBox",
+            "name": "ArchiveLoggingEnabled",
+            "caption": "Archive SHC history variables"
+        }
+    ],
+    "actions": [
+        {
+            "type": "Button",
+            "caption": "Evaluate control now",
+            "onClick": "SHC_Update($id);"
+        },
+        {
+            "type": "Button",
+            "caption": "Reset thermal learning",
+            "onClick": "SHC_ResetLearning($id);",
+            "confirm": "Alle gelernten Heiz- und Abkühlwerte zurücksetzen?"
+        },
+        {
+            "type": "Button",
+            "caption": "Start boost",
+            "onClick": "SHC_StartBoost($id);"
+        },
+        {
+            "type": "Button",
+            "caption": "Stop boost",
+            "onClick": "SHC_StopBoost($id);"
+        },
+        {
+            "type": "Button",
+            "caption": "Reset safety lockout",
+            "onClick": "SHC_ResetSafetyLockout($id);",
+            "confirm": "Reset the runtime lockout? Make sure the heater socket is off first."
+        }
+    ],
+    "status": [
+        {
+            "code": 102,
+            "icon": "active",
+            "caption": "Active"
+        },
+        {
+            "code": 104,
+            "icon": "inactive",
+            "caption": "Not configured yet"
+        },
+        {
+            "code": 201,
+            "icon": "error",
+            "caption": "Control fault"
+        },
+        {
+            "code": 202,
+            "icon": "error",
+            "caption": "Invalid configuration"
+        },
+        {
+            "code": 203,
+            "icon": "error",
+            "caption": "Primary sensor fault"
+        }
+    ]
+}

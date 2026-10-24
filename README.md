@@ -1,62 +1,41 @@
-# IP-Symcon Module Library Template
+# Smart Heating Control
 
-[![Check Style](https://github.com/DEIN-USER/DEIN-REPO/actions/workflows/style.yml/badge.svg)](https://github.com/DEIN-USER/DEIN-REPO/actions/workflows/style.yml)
-[![Run Tests](https://github.com/DEIN-USER/DEIN-REPO/actions/workflows/tests.yml/badge.svg)](https://github.com/DEIN-USER/DEIN-REPO/actions/workflows/tests.yml)
+Smart Heating Control (SHC) is a reusable IP-Symcon module for electrically powered room heaters. It controls a heater through user-selected IP-Symcon variables and combines a weekly temperature program, adaptive preheating, learned residual heat, PV surplus input, energy accounting, safety monitoring, and an HTML tile.
 
-Vorlage zum Entwickeln und Testen eigener Custom-Module für IP-Symcon.
+The module does not depend on a socket brand, communication protocol, heater model, or heater volume. It uses a Boolean socket action, a power value in watts, an optional cumulative energy value in kilowatt-hours, and primary plus optional secondary temperature variables.
 
-## Enthaltene Module
+## Features
 
-| Modul | Beschreibung | Doku |
-|-------|--------------|------|
-| MyModule | Demonstriert Variablen, Konfigurationsprüfung und eine HTML-Kachel ohne Geräteverbindung. | [README](MyModule/README.md) |
+- Automatic, Manual, Off, and time-limited Boost operation.
+- Editable weekly temperature schedule with day and week charts.
+- Hysteresis, minimum ON/OFF times, maximum room temperature, stale sensor handling, switch feedback, and configurable continuous-runtime monitoring.
+- Persistent thermal learning for heating rate, cooling rate, and residual heat; adaptive preheating falls back to a configurable initial estimate.
+- External `PVHeatingEnable` interface with thermal-potential checks, temperature lift limit, comfort horizon, and optional stale-permission timeout.
+- Cumulative-meter energy accounting or bounded power integration, calendar-period buckets, PV-phase attribution, and socket/electrical run-time totals.
+- Archive Control logging for SHC trend variables and a cached 24-hour temperature/power chart.
+- German translations and diagnostic output variables.
 
-## Installation
+## Requirements
 
-Über das Module Control (Kerninstanz) die Repository-URL hinzufügen:
+- IP-Symcon 9.0 or newer
+- PHP 8.1 or newer
+- A Boolean socket-state variable with an action
+- A numeric power variable in W
+- A numeric primary temperature variable and, optionally, a secondary temperature variable
+- An Archive Control instance for logged trends and the historical chart; the controller itself remains usable without archive history
 
-https://github.com/DEIN-USER/DEIN-REPO
+## Install and configure
 
-## Voraussetzungen
+1. Add `https://github.com/Ghostraider88/symcon-modul-smart-heating-control` in IP-Symcon Module Control.
+2. Create a **Smart Heating Control** instance.
+3. Select the existing primary and optional secondary temperature variables, the Boolean socket action, and power in W. Select the optional cumulative energy variable in kWh when available.
+4. Review the target, schedule, sensor timeouts, temperature ceiling, and PV settings.
+5. Keep the operating mode **Off** until the socket is connected to the heater and the input values and action have been checked.
 
-* IP-Symcon ab Version 8.1
+SHC verifies variable types and action availability. It cannot infer a numeric variable's engineering unit; the selected values must match the units shown in the form. See [installation](SETUP.md), [configuration](docs/configuration.md), [module variables and actions](docs/interface.md), and [architecture](docs/architecture.md).
 
-## Entwicklung
+## Testing
 
-PHP 8.1 oder neuer und Composer werden für die lokalen Prüfungen benötigt:
+Pure controller, schedule, thermal model, PV, safety, and energy-tracker tests are under `tests/`. Run `composer install`, `composer test`, and `composer run style:check` with PHP 8.1 and Composer. Test coverage and remaining hardware checks are described in [test documentation](docs/testing.md).
 
-```bash
-git submodule update --init --recursive
-composer install
-composer test
-composer run style:check
-```
-
-Neue Module verwenden den verbindlichen Visu-Stil aus
-[docs/VISU_STYLE.md](docs/VISU_STYLE.md) und den wiederverwendbaren Baukasten
-[libs/VisuStyle.php](libs/VisuStyle.php). Für Zustände, Diagnose und
-fähigkeitsabhängige Bedienfelder stehen zusätzlich folgende Bausteine bereit:
-
-- [libs/VisuState.php](libs/VisuState.php)
-- [libs/VisuDiagnostic.php](libs/VisuDiagnostic.php)
-- [libs/VisuCapability.php](libs/VisuCapability.php)
-
-Das Beispielmodul enthält eine Kachel mit Status, Aktion, Selbsttest,
-Capability-Prüfung und Live-Aktualisierung.
-
-Alle verbindlichen Struktur- und Codiervorgaben für die Modulentwicklung stehen in
-[AGENTS.md](AGENTS.md). Diese Datei dient zugleich als Kontext für Codex.
-
-Für die API-Prüfung bevorzugt die offizielle [Markdown-Dokumentation](https://www.symcon.de/de/llms.txt)
-verwenden: zuerst den [Funktionsindex](https://www.symcon.de/de/llms/function-index.md),
-danach die benötigten Detaildateien. Für eigene Module sind die
-[SDK-Modulmethoden](https://www.symcon.de/de/llms/developer/sdk-tools/sdk-php/module.md)
-und [Konfigurationsformulare](https://www.symcon.de/de/llms/developer/sdk-tools/sdk-php/configuration-forms.md)
-besonders relevant. Abrufweg, Versionsprüfung und Quellenregeln stehen in [AGENTS.md](AGENTS.md).
-
-Optionale Ausbauideen für das Template (kein verbindliches Regelwerk) sammelt
-[docs/template-backlog.md](docs/template-backlog.md).
-
-## Lizenz
-
-Die Vorlage wird unter der [MIT-Lizenz](LICENSE) veröffentlicht.
+Static tests and Symcon kernel checks do not substitute for verifying the actual socket, heater, temperature placement, or power meter. The heater must retain its own hardware temperature protection.
