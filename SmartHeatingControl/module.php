@@ -647,6 +647,41 @@ class SmartHeatingControl extends IPSModuleStrict
         $this->RunControlCycle();
     }
 
+    public function ImportHistoricalHeatingSamples(array $rates): void
+    {
+        if (count($rates) < 3 || count($rates) > 100) {
+            throw new InvalidArgumentException('Import requires between 3 and 100 historical heating rates.');
+        }
+
+        $thermalModel = ThermalModel::normalize(json_decode($this->ReadAttributeString('ThermalModel'), true));
+        if ($thermalModel['heatingSamples'] > 0) {
+            throw new InvalidArgumentException('Historical samples can only be imported before live heating learning has started.');
+        }
+
+        $normalizedRates = [];
+        foreach ($rates as $rate) {
+            if (!is_numeric($rate) || !is_finite((float) $rate) || (float) $rate < 0.01 || (float) $rate > 3.0) {
+                throw new InvalidArgumentException('Historical heating rates must be finite values between 0.01 and 3.0 K/h.');
+            }
+            $normalizedRates[] = (float) $rate;
+        }
+
+        sort($normalizedRates, SORT_NUMERIC);
+        $count = count($normalizedRates);
+        $middle = intdiv($count, 2);
+        $median = ($count % 2) === 1
+            ? $normalizedRates[$middle]
+            : ($normalizedRates[$middle - 1] + $normalizedRates[$middle]) / 2.0;
+
+        $thermalModel['heatingRateKPerHour'] = $median;
+        $thermalModel['heatingSamples'] = $count;
+        $thermalModel['confidence'] = min(1.0, $count / 8.0);
+        $thermalModel['lastObservation'] = null;
+
+        $this->WriteAttributeString('ThermalModel', json_encode($thermalModel, JSON_THROW_ON_ERROR));
+        $this->RunControlCycle();
+    }
+
     public function StartBoost(): void
     {
         $this->BeginBoost();
@@ -845,6 +880,7 @@ class SmartHeatingControl extends IPSModuleStrict
             $maximumTemperature = $this->ReadPropertyFloat('MaximumRoomTemperature');
             $preheatTarget = $this->UpdateThermalModel(
                 $now,
+                (int) $temperature['updated'],
                 $roomTemperature,
                 $heaterIsOn,
                 $powerIsUsable ? $power : null,
@@ -1063,6 +1099,7 @@ class SmartHeatingControl extends IPSModuleStrict
 
     private function UpdateThermalModel(
         int $now,
+        int $temperatureUpdated,
         float $roomTemperature,
         bool $heaterIsOn,
         ?float $power,
@@ -1075,7 +1112,7 @@ class SmartHeatingControl extends IPSModuleStrict
         $model = ThermalModel::observe(
             ThermalModel::normalize($storedModel),
             [
-                'time'        => $now,
+                'time'        => $temperatureUpdated,
                 'temperature' => $roomTemperature,
                 'socketOn'    => $heaterIsOn,
                 'powerW'      => $power,
@@ -1576,10 +1613,14 @@ class SmartHeatingControl extends IPSModuleStrict
             return null;
         }
 
-        $reading = $this->ReadTemperature($variableID, $offset);
+        $reading = $this->ReadNumericReading($variableID);
+        if ($reading === null || $reading['value'] === 0.0) {
+            return null;
+        }
+
+        $reading['value'] += $offset;
         if (
-            $reading === null
-            || $reading['updated'] <= 0
+            $reading['updated'] <= 0
             || $reading['updated'] > $now
             || ($now - $reading['updated']) > $timeout
             || $reading['value'] < self::MINIMUM_PLAUSIBLE_TEMPERATURE
